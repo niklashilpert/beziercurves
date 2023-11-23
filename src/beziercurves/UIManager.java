@@ -3,7 +3,6 @@ package beziercurves;
 import java.awt.*;
 
 import javax.swing.*;
-import java.awt.Point;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +12,7 @@ public class UIManager {
     public static final int mainPointRadius = 15;
     public static final int sampleSize = 300;
     
-    private ArrayList<DPoint> mainPoints;
+    private final ArrayList<DPoint> mainPoints;
     private DPoint[] curvePoints;
     private DPoint currentPoint;
     
@@ -111,21 +110,6 @@ public class UIManager {
             paintPoints(g2, mainPoints);
             
             repaint();
-            
-            /*g2.setColor(Color.blue);
-            Point[] quadraticCurvePoints = BezierCurves.getQuadraticCurve(p1, p2, p4, 30);
-            //connect(g2, quadraticCurvePoints);
-            paintPoints(g, quadraticCurvePoints);
-            
-            g2.setColor(Color.magenta);
-            Point[] cubicCurvePoints1 = BezierCurves.getCubicCurve(p1, p2, p3, p4, 30);
-            //connect(g2, cubicCurvePoints);
-            paintPoints(g, cubicCurvePoints1);
-            
-            g2.setColor(Color.green);
-            Point[] cubicCurvePoints2 = BezierCurves.getCubicCurve(p1, p2, p4, p3, 30);
-            //connect(g2, cubicCurvePoints);
-            paintPoints(g, cubicCurvePoints2);*/
             
         }
     }
