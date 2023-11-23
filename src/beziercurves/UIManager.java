@@ -9,8 +9,8 @@ import java.util.List;
 
 public class UIManager {
     
-    public static final int mainPointRadius = 15;
-    public static final int sampleSize = 300;
+    public static final int POINT_RADIUS = 15;
+    public static final int SAMPLE_SIZE = 300;
     
     private final ArrayList<DPoint> mainPoints;
     private DPoint[] curvePoints;
@@ -20,35 +20,47 @@ public class UIManager {
     private double x, y;
     
     public UIManager() {
+        UIListeners listeners = new UIListeners();
+        
         mainPoints = new ArrayList<>();
         curvePoints = new DPoint[0];
         
-        JFrame frame = new JFrame("Les curves de Bezier");
+        JFrame frame = new JFrame("Les curves de Bezier (?)");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.addKeyListener(listeners.KEY_LISTENER);
         
         JPanel panel = new BezierPanel();
         panel.setPreferredSize(new Dimension(900, 900));
         panel.setLayout(null);
-        frame.addKeyListener(new KeyAdapter() {
+        panel.addMouseMotionListener(listeners.MOTION_LISTENER);
+        panel.addMouseListener(listeners.MOUSE_LISTENER);
+        
+        frame.add(panel);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+    }
+    
+    private class UIListeners {
+        public final MouseListener MOUSE_LISTENER = new MouseAdapter() {
             @Override
-            public void keyPressed(KeyEvent e) {
+            public void mousePressed(MouseEvent e) {
+                DPoint clicked = new DPoint(e.getX(), e.getY());
                 
-                DPoint current = new DPoint(x, y);
-                
-                if (e.getKeyCode() == KeyEvent.VK_T) {
-                    showPoints = !showPoints;
-                } else if (e.getKeyCode() == KeyEvent.VK_D) {
-                    for (int i = 0; i < mainPoints.size(); i++) {
-                        if (mainPoints.get(i).distance(current) <= mainPointRadius) {
-                            DPoint selected = mainPoints.get(i);
-                            mainPoints.remove(selected);
-                            curvePoints = BezierCurves.getCurve(sampleSize, mainPoints);
-                        }
+                for (DPoint p : mainPoints) {
+                    if (p.distance(clicked) <= POINT_RADIUS) {
+                        currentPoint = p;
+                        return;
                     }
                 }
+                
+                mainPoints.add(clicked);
+                currentPoint = clicked;
+                curvePoints = BezierCurves.getCurve(SAMPLE_SIZE, mainPoints);
             }
-        });
-        panel.addMouseMotionListener(new MouseMotionAdapter() {
+        };
+        
+        public final MouseMotionListener MOTION_LISTENER = new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
                 x = e.getX();
@@ -62,33 +74,30 @@ public class UIManager {
                 
                 currentPoint.x += e.getX() - currentPoint.x;
                 currentPoint.y += e.getY() - currentPoint.y;
-                curvePoints = BezierCurves.getCurve(sampleSize, mainPoints);
-            }
-        });
-        panel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                DPoint clicked = new DPoint(e.getX(), e.getY());
                 
-                for (DPoint p : mainPoints) {
-                    if (p.distance(clicked) <= mainPointRadius) {
-                        currentPoint = p;
-                        return;
+                curvePoints = BezierCurves.getCurve(SAMPLE_SIZE, mainPoints);
+            }
+        };
+        
+        public final KeyListener KEY_LISTENER = new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                DPoint current = new DPoint(x, y);
+                
+                if (e.getKeyCode() == KeyEvent.VK_T) {
+                    showPoints = !showPoints;
+                } else if (e.getKeyCode() == KeyEvent.VK_D) {
+                    for (int i = 0; i < mainPoints.size(); i++) {
+                        if (mainPoints.get(i).distance(current) <= POINT_RADIUS) {
+                            DPoint selected = mainPoints.get(i);
+                            mainPoints.remove(selected);
+                            curvePoints = BezierCurves.getCurve(SAMPLE_SIZE, mainPoints);
+                        }
                     }
                 }
-                
-                mainPoints.add(clicked);
-                currentPoint = clicked;
-                curvePoints = BezierCurves.getCurve(sampleSize, mainPoints);
             }
-        });
-        
-        frame.add(panel);
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        };
     }
-    
     private class BezierPanel extends JPanel {
         @Override
         protected void paintComponent(Graphics g) {
@@ -110,34 +119,32 @@ public class UIManager {
             paintPoints(g2, mainPoints);
             
             repaint();
-            
+        }
+        
+        private void paintPoint(Graphics g, DPoint point) {
+            g.fillOval((int) point.x - POINT_RADIUS /2, (int) point.y - POINT_RADIUS /2, POINT_RADIUS, POINT_RADIUS);
+        }
+        
+        private void paintPoints(Graphics g, DPoint[] points) {
+            for (DPoint point : points) {
+                paintPoint(g, point);
+            }
+        }
+        private void paintPoints(Graphics g, List<DPoint> points) {
+            for (DPoint point : points) {
+                paintPoint(g, point);
+            }
+        }
+        
+        private void connect(Graphics g, DPoint[] points) {
+            for(int i = 1; i < points.length; i++) {
+                drawLine(g, points[i-1], points[i]);
+            }
+        }
+        
+        private void drawLine(Graphics g, DPoint d1, DPoint d2) {
+            g.drawLine((int) Math.round(d1.x), (int) Math.round(d1.y), (int) Math.round(d2.x), (int) Math.round(d2.y));
         }
     }
     
-    
-    private void paintPoint(Graphics g, DPoint point) {
-        g.fillOval((int) point.x - mainPointRadius/2, (int) point.y - mainPointRadius/2, mainPointRadius, mainPointRadius);
-    }
-    
-    private void paintPoints(Graphics g, DPoint[] points) {
-        for (DPoint point : points) {
-            paintPoint(g, point);
-        }
-    }
-    private void paintPoints(Graphics g, List<DPoint> points) {
-        for (DPoint point : points) {
-            paintPoint(g, point);
-        }
-    }
-    
-    
-    private void connect(Graphics g, DPoint[] points) {
-        for(int i = 1; i < points.length; i++) {
-            drawLine(g, points[i-1], points[i]);
-        }
-    }
-    
-    private void drawLine(Graphics g, DPoint d1, DPoint d2) {
-        g.drawLine((int) Math.round(d1.x), (int) Math.round(d1.y), (int) Math.round(d2.x), (int) Math.round(d2.y));
-    }
 }
