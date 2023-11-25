@@ -11,18 +11,18 @@ public class BezierCurves {
         if (points.size() < 2) return new DPoint[0];
         
         for (int i = 0; i < pointCount; i++) {
-            curvePoints[i] = getPoint(points, ((double) i) / (pointCount-1));
+            curvePoints[i] = getPointOnCurve(points, ((double) i) / (pointCount-1));
         }
         
         return curvePoints;
     }
     
-    private static DPoint getPoint(List<DPoint> points, double fraction) {
+    public static DPoint getPointOnCurve(List<DPoint> points, double fraction) {
         if (points.size() == 2) {
             return getLinearPointBetween(points.get(0), points.get(1), fraction);
         } else {
-            DPoint point1 = getPoint(points.subList(0, points.size()-1), fraction);
-            DPoint point2 = getPoint(points.subList(1, points.size()), fraction);
+            DPoint point1 = getPointOnCurve(points.subList(0, points.size()-1), fraction);
+            DPoint point2 = getPointOnCurve(points.subList(1, points.size()), fraction);
             return getLinearPointBetween(point1, point2, fraction);
         }
     }
@@ -33,8 +33,4 @@ public class BezierCurves {
         
         return new DPoint(x, y);
     }
-    
-    
-    
-    
 }

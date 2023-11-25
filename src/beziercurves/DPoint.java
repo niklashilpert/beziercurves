@@ -12,4 +12,9 @@ public class DPoint {
     public double distance(DPoint other) {
         return Math.sqrt(Math.pow(x-other.x, 2) + Math.pow(y-other.y, 2));
     }
+    
+    @Override
+    protected DPoint clone() {
+        return new DPoint(x, y);
+    }
 }
